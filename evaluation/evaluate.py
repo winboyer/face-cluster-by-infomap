@@ -37,7 +37,8 @@ def evaluate(gt_labels, pred_labels, metric='pairwise'):
     with Timer('evaluate with {}{}{}'.format(TextColors.FATAL, metric,
                                              TextColors.ENDC)):
         result = metric_func(gt_labels, pred_labels)
-    if isinstance(result, np.float):
+    # if isinstance(result, np.float):
+    if isinstance(result, np.float_):
         print('{}{}: {:.4f}{}'.format(TextColors.OKGREEN, metric, result,
                                       TextColors.ENDC))
     else:

@@ -38,17 +38,17 @@ def l2norm(vec):
 #     top_inds = np.argsort(-similarity)
 #     print('top_inds=========', top_inds)
     
-#     verificationMN test
-    feat2 = [vec1[0], vec1[1439], vec1[1580], vec1[740]]
-    feat2 = np.array(feat2)
+# #     verificationMN test
+#     feat2 = [vec1[0], vec1[1439], vec1[1580], vec1[740]]
+#     feat2 = np.array(feat2)
     
-#     feat3 = [vec1[1580]]
-    feat3 = [vec1[0]]
-    feat3 = np.array(feat3)
-#     similarity = np.dot(feat2, vec1.T)
-    similarity = np.dot(feat2, feat3.T)
-    top_inds = np.argsort(-similarity)
-    print('similarity.shape, top_inds.shape, similarity==========', similarity.shape, top_inds.shape, similarity)
+# #     feat3 = [vec1[1580]]
+#     feat3 = [vec1[0]]
+#     feat3 = np.array(feat3)
+# #     similarity = np.dot(feat2, vec1.T)
+#     similarity = np.dot(feat2, feat3.T)
+#     top_inds = np.argsort(-similarity)
+#     print('similarity.shape, top_inds.shape, similarity==========', similarity.shape, top_inds.shape, similarity)
     
     return vec1
 
@@ -158,7 +158,7 @@ class knn_faiss(knn):
                 pass
             else:
                 sims, nbrs = index.search(feats, k=k)
-                print('sims, nbrs===========', sims, nbrs)
+#                 print('sims, nbrs===========', sims, nbrs)
                 # torch.cuda.empty_cache()
                 self.knns = [(np.array(nbr, dtype=np.int32),
                               1 - np.array(sim, dtype=np.float32))
@@ -228,37 +228,35 @@ def cluster_by_infomap(nbrs, dists, pred_label_path, save_result=False):
         # node.physicalId 特征向量的编号
         # node.moduleIndex() 聚类的编号
         count+=1
-        idx2label[node.physicalId] = node.moduleIndex()
+#         idx2label[node.physicalId] = node.moduleIndex()
         if node.moduleIndex() not in label2idx:
             label2idx[node.moduleIndex()] = []
         label2idx[node.moduleIndex()].append(node.physicalId)
 
-    print('count=========', count)
     node_count = 0
-    print('len(label2idx)==========', len(label2idx))
     for k, v in label2idx.items():
-        print('k,v==========',k,v)
+#         print('k,v==========',k,v)
         if k == 0:
             node_count += len(v[2:])
             label2idx[k] = v[2:]
-            # print(k, v[2:])
+#             print(k, len(v[2:]), v[2:])
+            for v_value in v[2:]:
+                idx2label[v_value] = k
         else:
             node_count += len(v[1:])
             label2idx[k] = v[1:]
             # print(k, v[1:])
+            for v_value in v[1:]:
+                idx2label[v_value] = k
 
     # print(node_count)
     # 孤立点个数
     print("孤立点数：{}".format(len(single)))
-    print('single==========', single)
 
     keys_len = len(list(label2idx.keys()))
-    print('keys_len==========', keys_len)
 
     # 孤立点放入到结果中
-    print('idx2label==========', :)
     for single_node in single:
-        print('single_node=========', single_node)
         idx2label[single_node] = keys_len
         label2idx[keys_len] = [single_node]
         keys_len += 1
@@ -284,7 +282,9 @@ def cluster_by_infomap(nbrs, dists, pred_label_path, save_result=False):
 
 def get_dist_nbr(feature_path, k=80, knn_method='faiss-cpu'):
     features = np.fromfile(feature_path, dtype=np.float32)
+    # print(features, features.shape)
     features = features.reshape(-1, 256)
+    # print(features.shape)
     features = l2norm(features)
 
     index = knn_faiss(feats=features, k=k, knn_method=knn_method)
@@ -293,18 +293,21 @@ def get_dist_nbr(feature_path, k=80, knn_method='faiss-cpu'):
     dists, nbrs = knns2ordered_nbrs(knns)
     return dists, nbrs
 
+# knn_method = 'faiss-cpu'
 knn_method = 'faiss-gpu'
 metrics = ['pairwise', 'bcubed', 'nmi']
-# min_sim = 0.58
-min_sim = 0.5
+min_sim = 0.58
+# min_sim = 0.5
 # min_sim = 0.65
 k = 50
-# k = 80
+# k = 200
+# k = 400
+# k = 250
 
 # true_label
 
-# label_path = '/root/jinyfeng/projects/learn-to-cluster/data/labels/part1_test.meta'
-# feature_path = '/root/jinyfeng/projects/learn-to-cluster/data/features/part1_test.bin'
+# label_path = '/root/jinyfeng/datas/data/labels/part1_test.meta'
+# feature_path = '/root/jinyfeng/datas/data/features/part1_test.bin'
 # pred_label_path = './part1_test_predict.txt'
 
 
@@ -314,13 +317,20 @@ k = 50
 
 
 label_path = None
+# feature_path='/data2/ossdata/mz/dy_wb_xhs_alignfacefeat_ms1mv3_r50_filter3.bin'
+# pred_label_path='/data2/ossdata/mz/dy_wb_xhs_alignfacefeat_ms1mv3_r50_pred_filter3.txt'
+
+feature_path='/data2/ossdata/mz/dy_wb_xhs_alignfacefeat_glint360k_r50_filter3.bin'
+pred_label_path='/data2/ossdata/mz/dy_wb_xhs_alignfacefeat_glint360k_r50_pred_filter3.txt'
+
+
 # feature_path = '/root/jinyfeng/datas/sensoro/sensoro_person_info_yolo7face.bin'
 # pred_label_path = './sensoro_person_info_yolo7face.txt'
 # feature_path = '/root/jinyfeng/datas/sensoro/sensoro_person_info_yolo7face_v2.bin'
 # pred_label_path = './sensoro_person_info_yolo7face_v2.txt'
 
-feature_path = '/root/jinyfeng/datas/sensoro/sensoro_quality_face_alignface_yolov7face.bin'
-pred_label_path = './sensoro_quality_face_yolo7face.txt'
+# feature_path = '/root/jinyfeng/datas/sensoro/sensoro_quality_face_alignface_yolov7face.bin'
+# pred_label_path = './sensoro_quality_face_yolo7face.txt'
 
 # # feature_path='/root/jinyfeng/datas/sensoro/facefeat_v1.bin'
 # feature_path='/root/jinyfeng/datas/sensoro/facefeat_align_v1.bin'
@@ -331,11 +341,13 @@ pred_label_path = './sensoro_quality_face_yolo7face.txt'
 # # pred_label_path = './feat_face_predict.txt'
 # # pred_label_path = './feat_face_align_predict_t0.5.txt'
 
+
+
 with Timer('All face cluster step'):
     dists, nbrs = get_dist_nbr(feature_path=feature_path, k=k, knn_method=knn_method)
-    print(dists.shape, nbrs.shape)
-    print(dists, nbrs)
-#     cluster_by_infomap(nbrs, dists, pred_label_path, save_result=False)
+#     print(dists.shape, nbrs.shape)
+#     print(dists, nbrs)
+    # cluster_by_infomap(nbrs, dists, pred_label_path, save_result=False)
     cluster_by_infomap(nbrs, dists, pred_label_path, save_result=True)
 
 

@@ -1,6 +1,7 @@
 tqdm
 numpy>=1.18.1
 scipy
-sklearn
+#sklearn
+scikit-learn
 infomap
 faiss-gpu
